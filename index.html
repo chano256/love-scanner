@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Compatibility Scanner 💘</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            background-color: #1a1a1a;
+            color: #00ff00;
+            font-family: 'Press Start 2P', cursive;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            overflow: hidden;
+            text-align: center;
+        }
+        .scanner-box {
+            background: #000;
+            border: 4px solid #00ff00;
+            padding: 20px;
+            width: 100%;
+            max-width: 400px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.4);
+            position: relative;
+            z-index: 10;
+        }
+        h1 {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            line-height: 1.5;
+            color: #fff;
+            text-shadow: 2px 2px #ff4081;
+        }
+        input {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: #222;
+            border: 2px solid #555;
+            color: white;
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        input:focus { outline: none; border-color: #ff4081; }
+        .btn {
+            background: #ff4081;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            box-shadow: 4px 4px 0px #b21048;
+            transition: transform 0.1s;
+        }
+        .btn:active {
+            transform: translate(4px, 4px);
+            box-shadow: none;
+        }
+        #loading-area {
+            display: none;
+            margin-top: 20px;
+            text-align: left;
+        }
+        .progress-container {
+            width: 100%;
+            background: #333;
+            height: 25px;
+            border: 2px solid #fff;
+            margin-bottom: 10px;
+            position: relative;
+        }
+        .progress-bar {
+            height: 100%;
+            background: #00ff00;
+            width: 0%;
+            transition: width 0.2s;
+        }
+        .status-text {
+            font-size: 0.7rem;
+            color: #00ff00;
+            margin-bottom: 10px;
+            min-height: 40px;
+        }
+        #result-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 100;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        #result-screen h1 {
+            font-size: 3rem;
+            color: #ff4081;
+            animation: pulse 0.5s infinite alternate;
+        }
+        #result-screen p {
+            font-family: 'Roboto', sans-serif;
+            color: white;
+            font-size: 1.5rem;
+            margin-top: 20px;
+        }
+        .gif-container img {
+            max-width: 100%;
+            border-radius: 10px;
+            border: 4px solid #fff;
+        }
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+        .shake-hard {
+            animation: shake 0.5s; 
+            animation-iteration-count: infinite; 
+        }
+        .red-alert {
+            border-color: red !important;
+            box-shadow: 0 0 30px red !important;
+        }
+        .red-text { color: red !important; }
+        @keyframes pulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.1); }
+        }
+        /* Not-match styling */
+        .not-match h1 { color: #ff4d4d; }
+        .not-match p { color: #ffcccc; }
+    </style>
+</head>
+<body>
+
+    <div class="scanner-box" id="main-box">
+        <h1>❤️ LOVE SCANNER v9.0</h1>
+        
+        <div id="input-area">
+            <input type="text" id="yourName" placeholder="Your Name" value="You">
+            <input type="text" id="herName" placeholder="Her Name">
+            <button class="btn" onclick="startScan()">CALCULATE MATCH</button>
+        </div>
+
+        <div id="loading-area">
+            <div class="status-text" id="status-text">Initializing sensors...</div>
+            <div class="progress-container">
+                <div class="progress-bar" id="bar"></div>
+            </div>
+            <div id="percentage" style="text-align: right; color: white;">0%</div>
+        </div>
+    </div>
+
+    <div id="result-screen">
+        <div class="gif-container" id="result-gif">
+            <!-- GIF will be swapped based on match/fail -->
+            <img src="https://media.tenor.com/uTloq4s_VGEAAAAi/love-couple.gif" alt="Love">
+        </div>
+        <h1 id="result-title">INFINITY%</h1>
+        <p id="result-sub">IT'S A PERFECT MATCH!</p>
+        <p style="font-size: 1rem; color: #aaa;" id="result-note">(System could not handle the amount of love)</p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        // Allowed names (lowercase). Change these to your actual names.
+        const allowedNames = ['Valine', 'Wejuli', 'Sammantha'];
+
+        // helper: normalize & tokenize input into words (letters/digits)
+        function tokenizeName(input) {
+            if (!input) return [];
+            // split on common separators, remove empty pieces, strip punctuation
+            const parts = input
+                .toLowerCase()
+                .split(/[\s,;|\/\\]+/)
+                .map(s => s.replace(/[^0-9a-z\u00C0-\u017F\-']/gi, '')) // keep letters, numbers, accented letters, hyphen, apostrophe
+                .filter(Boolean);
+            return parts;
+        }
+
+        // returns true if every token is in allowedNames and at least one token exists
+        function isAllowedInput(input) {
+            const tokens = tokenizeName(input);
+            if (tokens.length === 0) return false;
+            const allowedSet = new Set(allowedNames.map(n => n.toLowerCase()));
+            // every token must match an allowed name exactly
+            return tokens.every(t => allowedSet.has(t));
+        }
+
+        function startScan() {
+            const herNameRaw = document.getElementById('herName').value;
+            if(!herNameRaw) {
+                alert("Please enter a name!");
+                return;
+            }
+
+            // Check whether this input should be treated as 'match' or 'not match'
+            const allowed = isAllowedInput(herNameRaw);
+
+            // Hide inputs, show loader
+            document.getElementById('input-area').style.display = 'none';
+            document.getElementById('loading-area').style.display = 'block';
+
+            const bar = document.getElementById('bar');
+            const status = document.getElementById('status-text');
+            const percentText = document.getElementById('percentage');
+            const box = document.getElementById('main-box');
+
+            let width = 0;
+
+            const logs = [
+                "Connecting to Cupid's Database...",
+                "Analyzing smiles...",
+                "Checking butterfly levels in stomach...",
+                `Scanning ${herNameRaw} for prettiness...`,
+                "Prettiness levels critical! Too high!",
+                "Calculating date compatibility...",
+                "Checking astrological alignment...",
+                "WARNING: Sparks detected!",
+            ];
+
+            // Normal Loading Phase (0 to 100%)
+            let interval = setInterval(() => {
+                width++;
+                bar.style.width = width + '%';
+                percentText.innerText = width + '%';
+
+                if (width % 15 === 0 && width < 90) {
+                    status.innerText = logs[Math.floor(Math.random() * logs.length)];
+                }
+
+                if (width >= 100) {
+                    clearInterval(interval);
+                    // pass the allowed flag into glitch/finish logic
+                    startGlitchMode(box, bar, status, percentText, allowed);
+                }
+            }, 50);
+        }
+
+        function startGlitchMode(box, bar, status, percentText, allowed) {
+            let width = 100;
+
+            if (allowed) {
+                // Existing "glitch to infinity" behaviour for allowed names
+                status.innerText = "⚠️ ERROR: LIMIT EXCEEDED";
+                status.classList.add('red-text');
+                box.classList.add('red-alert');
+                box.classList.add('shake-hard');
+
+                let glitchInterval = setInterval(() => {
+                    width += Math.floor(Math.random() * 50);
+                    percentText.innerText = width + '%';
+
+                    // Flash colors on the bar
+                    bar.style.backgroundColor = width % 2 === 0 ? 'red' : 'white';
+
+                    if (width > 600) {
+                        clearInterval(glitchInterval);
+                        showFinalResult(true);
+                    }
+                }, 100);
+            } else {
+                // Not a match: show a non-match sequence (stop early and show fail)
+                status.innerText = "SCANNER: NO MATCH FOUND";
+                status.classList.add('red-text');
+                box.classList.add('red-alert');
+                box.classList.add('shake-hard');
+
+                // Animate quickly a few jumps and then show fail screen
+                let jumps = 0;
+                let failInterval = setInterval(() => {
+                    jumps++;
+                    width += 20 + Math.floor(Math.random() * 30);
+                    percentText.innerText = Math.min(width, 100) + '%';
+                    bar.style.backgroundColor = 'red';
+
+                    if (jumps >= 6) {
+                        clearInterval(failInterval);
+                        showFinalResult(false);
+                    }
+                }, 120);
+            }
+        }
+
+        function showFinalResult(isMatch) {
+            const resultScreen = document.getElementById('result-screen');
+            const title = document.getElementById('result-title');
+            const sub = document.getElementById('result-sub');
+            const gif = document.getElementById('result-gif').querySelector('img');
+            const note = document.getElementById('result-note');
+            resultScreen.style.display = 'flex';
+
+            if (isMatch) {
+                // Keep your original "perfect match" end result
+                gif.src = "https://media.tenor.com/uTloq4s_VGEAAAAi/love-couple.gif";
+                title.innerText = "INFINITY%";
+                sub.innerText = "IT'S A PERFECT MATCH!";
+                note.innerText = "(System could not handle the amount of love)";
+                resultScreen.classList.remove('not-match');
+
+                // Confetti (as before)
+                var duration = 10 * 1000;
+                var animationEnd = Date.now() + duration;
+                var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 999 };
+
+                var interval = setInterval(function() {
+                    var timeLeft = animationEnd - Date.now();
+
+                    if (timeLeft <= 0) {
+                        return clearInterval(interval);
+                    }
+
+                    var particleCount = 50 * (timeLeft / duration);
+                    confetti(Object.assign({}, defaults, { particleCount, origin: { x: Math.random(), y: Math.random() - 0.2 } }));
+                }, 250);
+            } else {
+                // Not a match result
+                gif.src = "https://media.tenor.com/6T0bK2xH8MkAAAAi/sad-nope.gif"; // small sad/nope gif
+                title.innerText = "0%";
+                sub.innerText = "NOT A MATCH";
+                note.innerText = "(Only my beloved Valine ❤️ Sammantha Wejuli is allowed)";
+                resultScreen.classList.add('not-match');
+
+                // Add a little shake feedback
+                document.getElementById('main-box').classList.add('shake-hard');
+            }
+
+            // Make the result look prominent
+            document.body.scrollTop = 0;
+            document.documentElement.scrollTop = 0;
+        }
+    </script>
+</body>
+</html>
